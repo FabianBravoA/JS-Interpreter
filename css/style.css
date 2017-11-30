@@ -1,0 +1,58 @@
+header,
+main,
+footer {
+    padding-left: 300px;
+}
+
+nav.top-nav {
+    height: 110px;
+}
+
+h2 {
+    color: white;
+}
+
+#code {
+    font-family: monospace;
+    font-size: larger;
+    height: 20em;
+    width: 100%;
+    text-align: left;
+    color: black;
+    background-color: rgb(44, 44, 44);
+}
+
+.selectedCode {
+    background: #ffb7b7;
+}
+
+#code::selection {
+    background: #ffb7b7;
+}
+
+#code::-moz-selection {
+    background: #ffb7b7;
+}
+
+.code-container {
+    margin: 0 auto;
+    width: 100%;
+}
+
+@media only screen and (min-width: 993px) {
+    .container {
+        width: 85%;
+    }
+}
+
+@media only screen and (min-width: 993px) {
+    .container {
+        width: 70%;
+    }
+}
+
+@media only screen and (min-width: 601px) {
+    .container {
+        width: 85%;
+    }
+}

@@ -1,121 +1,142 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta charset="utf-8">
-  <title>JS-Interpreter Demo</title>
-  <link href="demos/style.css" rel="stylesheet" type="text/css">
-
-  <script>
-    // Depending on the URL argument, test the compressed or uncompressed version.
-    var compressed = (document.location.search == '?compressed');
-    if (compressed) {
-      document.write('<scr'+'ipt src="acorn_interpreter.js"></scr'+'ipt>');
-    } else {
-      document.write('<scr'+'ipt src="acorn.js"></scr'+'ipt>');
-      document.write('<scr'+'ipt src="interpreter.js"></scr'+'ipt>');
-    }
-
-    var myInterpreter;
-    function initAlert(interpreter, scope) {
-      var wrapper = function(text) {
-        return alert(arguments.length ? text : '');
-      };
-      interpreter.setProperty(scope, 'alert',
-          interpreter.createNativeFunction(wrapper));
-    };
-
-    function parseButton() {
-      var code = document.getElementById('code').value
-      myInterpreter = new Interpreter(code, initAlert);
-      disable('');
-    }
-
-    function stepButton() {
-      if (myInterpreter.stateStack.length) {
-        var node =
-            myInterpreter.stateStack[myInterpreter.stateStack.length - 1].node;
-        var start = node.start;
-        var end = node.end;
-      } else {
-        var start = 0;
-        var end = 0;
-      }
-      createSelection(start, end);
-      try {
-        var ok = myInterpreter.step();
-      } finally {
-        if (!ok) {
-          disable('disabled');
+    <meta charset="utf-8">
+    <title>Interprete de javascript</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/materialize.min.css" rel="stylesheet" type="text/css" media="screen,projection">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+    <link href="css/solarized.css" rel="stylesheet" type="text/css">
+    <script src="js/codemirror.js">
+    </script>
+    <link rel="stylesheet" href="css/codemirror.css">
+    <script src="mode/javascript/javascript.js"></script>
+    <script>
+        // Depending on the URL argument, test the compressed or uncompressed version.
+        var compressed = (document.location.search == '?compressed');
+        var previousMark;
+        if (compressed) {
+            document.write('<scr' + 'ipt src="acorn_interpreter.js"></scr' + 'ipt>');
+        } else {
+            document.write('<scr' + 'ipt src="acorn.js"></scr' + 'ipt>');
+            document.write('<scr' + 'ipt src="interpreter.js"></scr' + 'ipt>');
         }
-      }
-    }
 
-    function runButton() {
-      disable('disabled');
-      myInterpreter.run();
-    }
+        var myInterpreter;
 
-    function disable(disabled) {
-      document.getElementById('stepButton').disabled = disabled;
-      document.getElementById('runButton').disabled = disabled;
-    }
+        function initAlert(interpreter, scope) {
+            var wrapper = function(text) {
+                return alert(arguments.length ? text : '');
+            };
+            interpreter.setProperty(scope, 'alert',
+                interpreter.createNativeFunction(wrapper));
+        };
 
-    function createSelection(start, end) {
-      var field = document.getElementById('code')
-      if (field.createTextRange) {
-        var selRange = field.createTextRange();
-        selRange.collapse(true);
-        selRange.moveStart('character', start);
-        selRange.moveEnd('character', end);
-        selRange.select();
-      } else if (field.setSelectionRange) {
-        field.setSelectionRange(start, end);
-      } else if (field.selectionStart) {
-        field.selectionStart = start;
-        field.selectionEnd = end;
-      }
-      field.focus();
-    }
-  </script>
+        function parseButton() {
+            var code = codeMirror.doc.getValue();
+            myInterpreter = new Interpreter(code, initAlert);
+            disable('');
+        };
+
+        function stepButton() {
+            if (myInterpreter.stateStack.length) {
+                var node =
+                    myInterpreter.stateStack[myInterpreter.stateStack.length - 1].node;
+                var start = node.start;
+                var end = node.end;
+            } else {
+                var start = 0;
+                var end = 0;
+            }
+            createSelection(start, end);
+            try {
+                var ok = myInterpreter.step();
+            } finally {
+                if (!ok) {
+                    disable('disabled');
+                }
+            }
+        };
+
+        function runButton() {
+            disable('disabled');
+            myInterpreter.run();
+        };
+
+        function disable(disabled) {
+            document.getElementById('stepButton').disabled = disabled;
+            document.getElementById('runButton').disabled = disabled;
+        };
+
+        function getLine(text, start) {
+            return text.substring(0, start).split("\n").length - 1;
+        };
+
+        function getCharNumberInLine(text, absNumber) {
+            let lines = text.substring(0, absNumber).split("\n");
+            return lines[lines.length - 1].length;
+        };
+
+        function createSelection(start, end) {
+            var code = codeMirror.doc.getValue();
+
+            if (previousMark) {
+                previousMark.clear();
+            }
+
+            previousMark = codeMirror.doc.markText({
+                line: getLine(code, start),
+                ch: getCharNumberInLine(code, start)
+            }, {
+                line: getLine(code, start),
+                ch: getCharNumberInLine(code, end)
+            }, {
+                className: "selectedCode"
+            });
+        };
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
-<body>
-  <h1>JS-Interpreter Demo</h1>
 
-  <p>Enter JavaScript code below, then click <em>Parse</em>.  To execute, either
-  click <em>Step</em> repeatedly, or click <em>Run</em> once.
-  Open your browser's console for errors.</p>
-  <p><textarea id="code">
-var result = [];
-function fibonacci(n, output) {
-  var a = 1, b = 1, sum;
-  for (var i = 0; i &lt; n; i++) {
-    output.push(a);
-    sum = a + b;
-    a = b;
-    b = sum;
-  }
-}
-fibonacci(16, result);
-alert(result.join(', '));
-</textarea><br>
-  <button onclick="parseButton()">Parse</button>
-  <button onclick="stepButton()" id="stepButton" disabled="disabled">Step</button>
-  <button onclick="runButton()" id="runButton" disabled="disabled">Run</button>
-  </p>
+<body style="margin: 0 auto">
+    <header>
+        <ul id="lateral-menu" class="side-nav fixed" style="transform: translateX(0px);">
+            <li>
+                <button class="waves-effect waves-light btn blue" onclick="parseButton()">Interpretar</button>
+                <button class="waves-effect waves-light btn green" onclick="stepButton()" id="stepButton" disabled="disabled">Dar paso</button>
+                <button class="waves-effect waves-light btn red" onclick="runButton()" id="runButton" disabled="disabled">Ejecutar</button>
+            </li>
+        </ul>
+    </header>
+    <main>
+        <div class="section blue" id="index-banner">
+            <div class="container">
+                <div class="row">
+                    <div class="col s12 m9">
+                        <h1 class="header center-on-small-only white-text">Interprete Javascript</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <p id="instructions" class="caption">Escribe tu código de JavaScript y luego haz click en <em>Interpretar</em>. Para ejecutar puedes ir paso a paso con <em>Dar paso</em>, o hacer click en <em>Ejecutar</em></p>
+        </div>
+        <div class="code-container">
+            <div class="row">
+                <div class="col s1 m12">
+                    <textarea id="code">
+                    </textarea>
+                </div>
+            </div>
+        </div>
 
-  <p><small>
-  <script>
-    if (compressed) {
-      document.write('[ Running compressed bundle.  Switch to <A HREF="?uncompressed">raw sources</A>. ]');
-    } else {
-      document.write('[ Running raw sources.  Switch to <A HREF="?compressed">compressed bundle</A>. ]');
-    }
-    disable('disabled');
-  </script>
-  </small></p>
-
-  <p>Read the <a href="docs.html">JS-Interpreter documentation</a>.</p>
-  <p>Get the <a href="https://github.com/NeilFraser/JS-Interpreter">source code</a>.</p>
-
+        <p>Read the <a href="docs.html">JS-Interpreter documentation</a>.</p>
+        <p>Get the <a href="https://github.com/NeilFraser/JS-Interpreter">source code</a>.</p>
+    </main>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
 </body>
+
 </html>
