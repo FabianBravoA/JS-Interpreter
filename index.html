@@ -12,128 +12,62 @@
     </script>
     <link rel="stylesheet" href="css/codemirror.css">
     <script src="mode/javascript/javascript.js"></script>
-    <script>
-        // Depending on the URL argument, test the compressed or uncompressed version.
-        var compressed = (document.location.search == '?compressed');
-        var previousMark;
-        if (compressed) {
-            document.write('<scr' + 'ipt src="acorn_interpreter.js"></scr' + 'ipt>');
-        } else {
-            document.write('<scr' + 'ipt src="acorn.js"></scr' + 'ipt>');
-            document.write('<scr' + 'ipt src="interpreter.js"></scr' + 'ipt>');
-        }
-
-        var myInterpreter;
-
-        function initAlert(interpreter, scope) {
-            var wrapper = function(text) {
-                return alert(arguments.length ? text : '');
-            };
-            interpreter.setProperty(scope, 'alert',
-                interpreter.createNativeFunction(wrapper));
-        };
-
-        function parseButton() {
-            var code = codeMirror.doc.getValue();
-            myInterpreter = new Interpreter(code, initAlert);
-            disable('');
-        };
-
-        function stepButton() {
-            if (myInterpreter.stateStack.length) {
-                var node =
-                    myInterpreter.stateStack[myInterpreter.stateStack.length - 1].node;
-                var start = node.start;
-                var end = node.end;
-            } else {
-                var start = 0;
-                var end = 0;
-            }
-            createSelection(start, end);
-            try {
-                var ok = myInterpreter.step();
-            } finally {
-                if (!ok) {
-                    disable('disabled');
-                }
-            }
-        };
-
-        function runButton() {
-            disable('disabled');
-            myInterpreter.run();
-        };
-
-        function disable(disabled) {
-            document.getElementById('stepButton').disabled = disabled;
-            document.getElementById('runButton').disabled = disabled;
-        };
-
-        function getLine(text, start) {
-            return text.substring(0, start).split("\n").length - 1;
-        };
-
-        function getCharNumberInLine(text, absNumber) {
-            let lines = text.substring(0, absNumber).split("\n");
-            return lines[lines.length - 1].length;
-        };
-
-        function createSelection(start, end) {
-            var code = codeMirror.doc.getValue();
-
-            if (previousMark) {
-                previousMark.clear();
-            }
-
-            previousMark = codeMirror.doc.markText({
-                line: getLine(code, start),
-                ch: getCharNumberInLine(code, start)
-            }, {
-                line: getLine(code, start),
-                ch: getCharNumberInLine(code, end)
-            }, {
-                className: "selectedCode"
-            });
-        };
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
 <body style="margin: 0 auto">
-    <header>
-        <ul id="lateral-menu" class="side-nav fixed" style="transform: translateX(0px);">
-            <li>
-                <button class="waves-effect waves-light btn blue" onclick="parseButton()">Interpretar</button>
-                <button class="waves-effect waves-light btn green" onclick="stepButton()" id="stepButton" disabled="disabled">Dar paso</button>
-                <button class="waves-effect waves-light btn red" onclick="runButton()" id="runButton" disabled="disabled">Ejecutar</button>
-            </li>
-        </ul>
-    </header>
-    <main>
-        <div class="section blue" id="index-banner">
-            <div class="container">
-                <div class="row">
-                    <div class="col s12 m9">
-                        <h1 class="header center-on-small-only white-text">Interprete Javascript</h1>
-                    </div>
-                </div>
+    <div class="row">
+        <div class="col s12 m4 l3">
+            <div class="section row">
+                <h5>Panel de control</h5>
+                <ul id="lateral-menu">
+                    <li class="container center row">
+                        <button class="col s12 waves-effect waves-light btn blue" onclick="parseButton()">Interpretar</button>
+                    </li>
+                    <li class="container center row">
+                        <button class="col s5 waves-effect waves-light btn green" onclick="stepButton()" id="stepButton" disabled="disabled">Dar paso</button>
+                        <button class="col s5 push-s2 waves-effect waves-light btn red" onclick="runButton()" id="runButton" disabled="disabled">Ejecutar</button>
+                    </li>
+                </ul>
             </div>
-        </div>
-        <div class="container">
-            <p id="instructions" class="caption">Escribe tu código de JavaScript y luego haz click en <em>Interpretar</em>. Para ejecutar puedes ir paso a paso con <em>Dar paso</em>, o hacer click en <em>Ejecutar</em></p>
-        </div>
-        <div class="code-container">
-            <div class="row">
-                <div class="col s1 m12">
-                    <textarea id="code">
-                    </textarea>
-                </div>
+            <div class="divider"></div>
+            <div class="section" id="dataSection">
+                <h5>Datos</h5>
             </div>
         </div>
 
-        <p>Read the <a href="docs.html">JS-Interpreter documentation</a>.</p>
-        <p>Get the <a href="https://github.com/NeilFraser/JS-Interpreter">source code</a>.</p>
-    </main>
+        <div class="col s12 m8 l9">
+            <main>
+                <div class="section blue" id="index-banner">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col s12 m9">
+                                <h1 class="header center-on-small-only white-text">Interprete Javascript</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <p id="instructions" class="caption">Escribe tu código de JavaScript y luego haz click en <em>Interpretar</em>. Para ejecutar puedes ir paso a paso con <em>Dar paso</em>, o hacer click en <em>Ejecutar</em></p>
+                </div>
+                <div class="code-container">
+                    <div class="row">
+                        <div class="col s12 m12">
+                            <div class="card-panel teal">
+                                <textarea id="code">
+                        </textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Read the <a href="docs.html">JS-Interpreter documentation</a>.</p>
+                <p>Get the <a href="https://github.com/NeilFraser/JS-Interpreter">source code</a>.</p>
+            </main>
+
+        </div>
+
+    </div>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="js/materialize.min.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
